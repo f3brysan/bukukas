@@ -12,7 +12,8 @@ class DashboardController extends Controller
         $categories = Category::all();
         $transactionsController = new TransactionController();
         $mostExpenseCategories = $transactionsController->getMostExpenseCategories();
+        $monthlyChart = $transactionsController->getDailyChart();
         
-        return view('dashboard.index', compact('categories', 'mostExpenseCategories'));
+        return view('dashboard.index', compact('categories', 'mostExpenseCategories', 'monthlyChart'));
     }
 }

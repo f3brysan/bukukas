@@ -52,21 +52,13 @@
             <div class="card h-100">
                 <div class="card-header">
                     <div class="d-flex justify-content-between">
-                        <h4 class="mb-2">Monthly Financial Overview</h4>
-                        <div class="dropdown">
-                            <button class="btn p-0" type="button" id="chartDropdown" data-bs-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false">
-                                <i class="mdi mdi-dots-vertical mdi-24px"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="chartDropdown">
-                                <a class="dropdown-item" href="javascript:void(0);">Download</a>
-                                <a class="dropdown-item" href="javascript:void(0);">Share</a>
-                            </div>
-                        </div>
+                        <h4 class="mb-2">30 Days Financial Overview</h4>                        
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="monthlyChart" style="height: 300px;"></div>
+                    <figure class="highcharts-figure ">
+                        <div id="monthlyChart" class="highcharts-light"></div>                        
+                    </figure>
                 </div>
             </div>
         </div>
@@ -161,7 +153,8 @@
     </div>
 
     <!-- Delete Transaction Modal -->
-    <div class="modal fade" id="deleteTransactionModal" tabindex="-1" aria-labelledby="deleteTransactionModalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteTransactionModal" tabindex="-1" aria-labelledby="deleteTransactionModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -187,6 +180,13 @@
         integrity="sha512-0XDfGxFliYJPFrideYOoxdgNIvrwGTLnmK20xZbCAvPfLGQMzHUsaqZK8ZoH+luXGRxTrS46+Aq400nCnAT0/w=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="{{ asset('assets') }}/js/dashboards-ecommerce.js"></script>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/series-label.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://code.highcharts.com/themes/adaptive.js"></script>
 
     <script>
         let transactionsTable;
@@ -299,21 +299,24 @@
                     $('#transactionForm select[name="type"]').val(response.data.type).trigger('change');
                     $('#transactionForm input[name="id"]').val(response.data.id);
                     $('#transactionForm textarea[name="description"]').val(response.data.description);
-                    $('#transactionForm input[name="amount"]').val(response.data.amount).trigger('change').mask('000.000.000.000.000', {
-                        reverse: true
-                    });
+                    $('#transactionForm input[name="amount"]').val(response.data.amount).trigger('change').mask(
+                        '000.000.000.000.000', {
+                            reverse: true
+                        });
                     $('#transactionForm input[name="date"]').val(response.data.date).trigger('change');
                     // Wait until the category options are loaded before setting the value
                     let checkAndSetCategory = function() {
                         // Check if category option is present yet
-                        if ($('#transactionForm select[name="category_id"] option[value="' + response.data.category_id + '"]').length) {
-                            $('#transactionForm select[name="category_id"]').val(response.data.category_id).trigger('change');
+                        if ($('#transactionForm select[name="category_id"] option[value="' + response.data
+                                .category_id + '"]').length) {
+                            $('#transactionForm select[name="category_id"]').val(response.data.category_id)
+                                .trigger('change');
                         } else {
                             // If not, try again after a short delay
                             setTimeout(checkAndSetCategory, 50);
                         }
                     };
-                    checkAndSetCategory();                    
+                    checkAndSetCategory();
                 },
                 error: function(xhr, status, error) {
                     console.log(xhr.responseJSON.message);
@@ -324,7 +327,7 @@
 
         function deleteTransaction(id) {
             $('#deleteTransactionModal').modal('show');
-            $('#deleteTransactionModalLabel').text('Delete Transaction');   
+            $('#deleteTransactionModalLabel').text('Delete Transaction');
             $('#deleteTransactionId').val(id);
         }
 
@@ -382,5 +385,113 @@
                 }
             });
         })
+    </script>
+
+    <script>
+        Highcharts.chart('monthlyChart', {
+            chart: {
+                type: 'line'
+            },
+
+            title: {
+                text: 'Daily Financial Overview',
+                align: 'center'
+            },
+
+            subtitle: {
+                text: 'Income vs Expense Trends',
+                align: 'left'
+            },
+
+            yAxis: {
+                title: {
+                    text: 'Amount (Rp)'
+                },
+                labels: {
+                    formatter: function() {
+                        return 'Rp ' + Highcharts.numberFormat(this.value, 0, ',', '.');
+                    }
+                }
+            },
+
+            xAxis: {
+                type: 'datetime',
+                title: {
+                    text: 'Date'
+                },
+                labels: {
+                    formatter: function() {
+                        return Highcharts.dateFormat('%d %b', this.value);
+                    }
+                },
+                accessibility: {
+                    rangeDescription: 'Date range'
+                }
+            },
+
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle'
+            },
+
+            plotOptions: {
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    }
+                }
+            },
+
+            tooltip: {
+                shared: true,
+                crosshairs: true,
+                formatter: function() {
+                    let tooltip = '<b>' + Highcharts.dateFormat('%d %b %Y', this.x) + '</b><br/>';
+                    this.points.forEach(function(point) {
+                        tooltip += '<span style="color:' + point.color + '">●</span> ' + 
+                                   point.series.name + ': <b>Rp ' + 
+                                   Highcharts.numberFormat(point.y, 0, ',', '.') + '</b><br/>';
+                    });
+                    return tooltip;
+                }
+            },
+
+            series: [
+                {
+                    name: 'Income',
+                    data: [
+                        @foreach($monthlyChart['chart'] as $data)
+                        [Date.parse('{{ $data->date }}'), {{ $data->total_income }}],
+                        @endforeach
+                    ],
+                    color: '#28a745'
+                },
+                {
+                    name: 'Expense',
+                    data: [
+                        @foreach($monthlyChart['chart'] as $data)
+                        [Date.parse('{{ $data->date }}'), {{ $data->total_expense }}],
+                        @endforeach
+                    ],
+                    color: '#dc3545'
+                }
+            ],
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        legend: {
+                            layout: 'horizontal',
+                            align: 'center',
+                            verticalAlign: 'bottom'
+                        }
+                    }
+                }]
+            }
+
+        });
     </script>
 @endpush

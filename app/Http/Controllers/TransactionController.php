@@ -128,6 +128,7 @@ class TransactionController extends Controller
                     DB::raw('CAST(SUM(CASE WHEN type = "income" THEN amount ELSE 0 END) AS SIGNED) as total_income'),
                     DB::raw('CAST(SUM(CASE WHEN type = "expense" THEN amount ELSE 0 END) AS SIGNED) as total_expense')
                 )
+                ->where('date', '>=', Carbon::now()->subDays(30))
                 ->groupBy('date')
                 ->get();
             
