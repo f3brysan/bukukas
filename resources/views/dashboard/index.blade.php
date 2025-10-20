@@ -9,6 +9,31 @@
     </div>
 
     <div class="row gy-4 mb-4">
+        <!-- Quick Actions -->
+        <div class="col-lg-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4 class="mb-2">Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="javascript:void(0);" onclick="addIncome()" class="btn btn-success">
+                            <i class="mdi mdi-cash-plus me-2"></i>
+                            Add Income
+                        </a>
+                        <a href="javascript:void(0);" onclick="addExpense()" class="btn btn-danger">
+                            <i class="mdi mdi-cash-minus me-2"></i>
+                            Add Expense
+                        </a>
+                        <a href="javascript:void(0);" onclick="viewReports()" class="btn btn-primary">
+                            <i class="mdi mdi-chart-line me-2"></i>
+                            View Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Recent Transactions -->
         <div class="col-lg-9">
             <div class="card h-100">
@@ -31,35 +56,6 @@
                             </thead>
                             <tbody></tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="col-lg-3">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h4 class="mb-2">Quick Actions</h4>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <a href="#" class="btn btn-success">
-                            <i class="mdi mdi-cash-plus me-2"></i>
-                            Add Income
-                        </a>
-                        <a href="#" class="btn btn-danger">
-                            <i class="mdi mdi-cash-minus me-2"></i>
-                            Add Expense
-                        </a>
-                        <a href="#" class="btn btn-primary">
-                            <i class="mdi mdi-chart-line me-2"></i>
-                            View Reports
-                        </a>
-                        <a href="#" class="btn btn-secondary">
-                            <i class="mdi mdi-cog me-2"></i>
-                            Settings
-                        </a>
                     </div>
                 </div>
             </div>
@@ -157,32 +153,125 @@
             </div>
         </div>
     </div>
+
+    <!-- Income Modal -->
+    <div class="modal fade" id="incomeModal" tabindex="-1" aria-labelledby="incomeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="incomeForm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="incomeModalLabel">Add Income</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="incomeDescription" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="incomeDescription" name="description"
+                                placeholder="Enter income description" required>
+                        </div>
+                        <!-- Category -->
+                        <div class="mb-3">
+                            <label for="incomeCategory" class="form-label">Category</label>
+                            <select id="incomeCategory" name="category_id" class="form-select" required>
+                                <option value="" disabled selected>Select category</option>
+                                @foreach ($categories->where('type', 'income') as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <!-- Amount -->
+                        <div class="mb-3">
+                            <label for="incomeAmount" class="form-label">Amount</label>
+                            <input type="text" class="form-control income-amount" id="incomeAmount" name="amount"
+                                placeholder="Enter amount" required>
+                        </div>
+                        <!-- Date -->
+                        <div class="mb-3">
+                            <label for="incomeDate" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="incomeDate" name="date" value="{{ date('Y-m-d') }}" required>
+                        </div>
+                        <input type="hidden" name="type" value="income">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Income</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Add Expense Modal --}}
+    <div class="modal fade" id="expenseModal" tabindex="-1" aria-labelledby="expenseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="expenseForm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="expenseModalLabel">Add Expense</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="expenseDescription" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="expenseDescription" name="description"
+                                placeholder="Enter expense description" required>
+                        </div>
+                        <!-- Category -->
+                        <div class="mb-3">
+                            <label for="expenseCategory" class="form-label">Category</label>
+                            <select id="expenseCategory" name="category_id" class="form-select" required>
+                                <option value="" disabled selected>Select category</option>
+                                @foreach ($categories->where('type', 'expense') as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <!-- Amount -->
+                        <div class="mb-3">
+                            <label for="expenseAmount" class="form-label">Amount</label>
+                            <input type="text" class="form-control expense-amount" id="expenseAmount" name="amount"
+                                placeholder="Enter amount" required>
+                        </div>
+                        <!-- Date -->
+                        <div class="mb-3">
+                            <label for="expenseDate" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="expenseDate" name="date" value="{{ date('Y-m-d') }}" required>
+                        </div>
+                        <input type="hidden" name="type" value="expense">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Expense</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js"
+        integrity="sha512-0XDfGxFliYJPFrideYOoxdgNIvrwGTLnmK20xZbCAvPfLGQMzHUsaqZK8ZoH+luXGRxTrS46+Aq400nCnAT0/w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="{{ asset('assets') }}/js/dashboards-ecommerce.js"></script>
-    <script>
-        // Initialize monthly chart
-        document.addEventListener('DOMContentLoaded', function() {
-            // Chart initialization code would go here
-            console.log('Dashboard loaded successfully');
-        });
-    </script>
 
     <script>
         let transactionsTable;
         let transactionToDelete = null;
         $(document).ready(function() {
-
+            $('.income-amount, .expense-amount').mask('000.000.000.000.000', {
+                reverse: true
+            });
             transactionsTable = $('#transactionsTable').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
                     url: "{{ route('transactions.get') }}",
-                    type: 'GET',                    
+                    type: 'GET',
                 },
-                columns: [
-                    {
+                columns: [{
                         data: 'description',
                         name: 'description'
                     },
@@ -220,5 +309,13 @@
                 }
             });
         });
+
+        function addIncome() {
+            $('#incomeModal').modal('show');
+        }
+
+        function addExpense() {
+            $('#expenseModal').modal('show');
+        }
     </script>
 @endpush
