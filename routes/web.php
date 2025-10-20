@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TransactionController;
 
 
 Route::get('/login', [AuthController::class, 'login'])->name('login');
@@ -16,4 +17,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::resource('categories', CategoryController::class);
+
+    Route::get('/transactions/get', [TransactionController::class, 'getTransactions'])->name('transactions.get');
 });
