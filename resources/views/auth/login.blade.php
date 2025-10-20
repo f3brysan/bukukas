@@ -11,6 +11,7 @@
     <title>Buku Kas</title>
 
     <meta name="description" content="" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('assets') }}/img/favicon/favicon.ico" />
@@ -146,37 +147,135 @@
     <script src="{{ asset('assets') }}/js/main.js"></script>
 
     <!-- Page JS -->
-    {{-- <script src="{{ asset('assets') }}/js/pages-auth.js"></script> --}}
+    <script src="{{ asset('assets') }}/js/pages-auth.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
         $(document).ready(function() {
+            console.log("Login script loaded");
+            
+            // Disable FormValidation default submit behavior
+            if (typeof FormValidation !== 'undefined') {
+                const formElement = document.querySelector('#formAuthentication');
+                if (formElement) {
+                    // Remove any existing FormValidation instance
+                    FormValidation.utils.destroy(formElement);
+                }
+            }
+            
+            // Handle form submission
             $("#formAuthentication").on("submit", function(e) {
+                console.log("Form submit event triggered");
                 e.preventDefault();
-                let formData = $("#formAuthentication").serialize();                
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                console.log("Prevented default form submission");
+                
+                // Get form data
+                let formData = $(this).serialize();
+                let $submitBtn = $("#btnLogin");
+                let originalText = $submitBtn.html();
+                
+                console.log("Form data:", formData);
+                
+                // Basic client-side validation
+                let email = $("#email").val().trim();
+                let password = $("#password").val().trim();
+                
+                if (!email || !password) {
+                    toastr.error("Please fill in all fields");
+                    return false;
+                }
+                
+                if (!isValidEmail(email)) {
+                    toastr.error("Please enter a valid email address");
+                    return false;
+                }
+                
+                // Disable button and show loading state
+                $submitBtn.prop("disabled", true);
+                $submitBtn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Signing in...');
 
-                $("#btnLogin").prop("disabled", true);
-                $("#btnLogin").html("Signing in...");
+                console.log("Making AJAX request to:", "{{ route('login.store') }}");
 
+                // Make AJAX request
                 $.ajax({
                     url: "{{ route('login.store') }}",
                     type: "POST",
                     data: formData,
                     dataType: "JSON",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || $('input[name="_token"]').val()
+                    },
                     success: function(response) {
-                        console.log(response);
-                        toastr.success(response.message);
-
-                        setTimeout(function() {
-                            window.location.href = "{{ route('dashboard') }}";
-                        }, 1000);
+                        console.log("AJAX Success:", response);
+                        if (response.success) {
+                            toastr.success(response.message);
+                            setTimeout(function() {
+                                window.location.href = "{{ route('dashboard') }}";
+                            }, 1000);
+                        } else {
+                            toastr.error(response.message);
+                            resetButton();
+                        }
                     },
                     error: function(xhr, status, error) {
-                        toastr.error(xhr.responseJSON.message + ' - ' + xhr.responseJSON.error);
-                        $("#btnLogin").prop("disabled", false);
-                        $("#btnLogin").html("Sign in");
+                        console.log("AJAX Error:", xhr, status, error);
+                        let errorMessage = "Login failed. Please try again.";
+                        
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                                if (xhr.responseJSON.error) {
+                                    errorMessage += " - " + xhr.responseJSON.error;
+                                }
+                            } else if (xhr.responseJSON.errors) {
+                                // Handle validation errors
+                                let errors = xhr.responseJSON.errors;
+                                let firstError = Object.values(errors)[0];
+                                errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+                            }
+                        } else if (xhr.status === 0) {
+                            errorMessage = "Network error. Please check your connection.";
+                        } else if (xhr.status === 500) {
+                            errorMessage = "Server error. Please try again later.";
+                        }
+                        
+                        toastr.error(errorMessage);
+                        resetButton();
                     }
                 });
+                
+                // Function to reset button state
+                function resetButton() {
+                    $submitBtn.prop("disabled", false);
+                    $submitBtn.html(originalText);
+                }
+                
+                return false; // Additional prevention
+            });
+            
+            // Email validation function
+            function isValidEmail(email) {
+                let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+            
+            // Handle button click as backup
+            $("#btnLogin").on("click", function(e) {
+                console.log("Button click event triggered");
+                e.preventDefault();
+                e.stopPropagation();
+                $("#formAuthentication").trigger("submit");
+            });
+            
+            // Allow Enter key to submit form
+            $("#email, #password").on("keypress", function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $("#formAuthentication").trigger("submit");
+                }
             });
         });
     </script>
