@@ -54,8 +54,10 @@ class TransactionController extends Controller
     public function storeTransaction(Request $request)
     {
         try {
-            $amount = str_replace('.', '', $request->amount);            
-            $transaction = Transaction::create([
+            $amount = str_replace('.', '', $request->amount);                  
+            $transaction = Transaction::updateOrCreate([
+                'id' => $request->id
+            ], [
                 'category_id' => $request->category_id,
                 'user_id' => auth()->user()->id,
                 'type' => $request->type,
@@ -112,6 +114,25 @@ class TransactionController extends Controller
                 'error' => $th->getMessage(),
                 'categories' => []
             ];
+        }
+    }
+
+    public function editTransaction(Request $request, $id)
+    {
+        try {
+            $transaction = Transaction::find($id);
+            $transaction->amount = number_format($transaction->amount, 0, ',', '.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaction fetched successfully',
+                'data' => $transaction
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to edit transaction',
+                'error' => $th->getMessage()
+            ], 500);
         }
     }
 }

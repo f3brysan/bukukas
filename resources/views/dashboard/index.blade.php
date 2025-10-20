@@ -89,7 +89,8 @@
                                     </div>
                                     <span>{{ $category->name }}</span>
                                 </div>
-                                <span class="fw-semibold">Rp. {{ number_format($category->total_expense, 0, ',', '.') }}</span>
+                                <span class="fw-semibold">Rp.
+                                    {{ number_format($category->total_expense, 0, ',', '.') }}</span>
                             </div>
                         @endforeach
                     @else
@@ -106,9 +107,10 @@
     <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <form id="transactionForm">
+                <input type="hidden" name="id" id="transactionId">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="transactionModalLabel">Add Transaction</h5>
+                        <h5 class="modal-title" id="transactionModalLabel">Transaction</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -229,6 +231,8 @@
 
         function addTransaction() {
             $('#transactionModal').modal('show');
+            $('#transactionModalLabel').text('Add Transaction');
+            $('#transactionForm button[type="submit"]').text('Add Transaction');
         }
 
         $("#transactionForm").on("submit", function(e) {
@@ -259,6 +263,43 @@
                 }
             });
         });
+
+        function editTransaction(id) {
+            $("#transactionForm").trigger("reset");
+            $.ajax({
+                url: "{{ route('transactions.edit', ['id' => ':id']) }}".replace(':id', id),
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    console.log(response);
+                    $('#transactionModal').modal('show');
+                    $('#transactionModalLabel').text('Edit Transaction');
+                    $('#transactionForm button[type="submit"]').text('Update Transaction');
+                    $('#transactionForm select[name="type"]').val(response.data.type).trigger('change');
+                    $('#transactionForm input[name="id"]').val(response.data.id);
+                    $('#transactionForm textarea[name="description"]').val(response.data.description);
+                    $('#transactionForm input[name="amount"]').val(response.data.amount).trigger('change').mask('000.000.000.000.000', {
+                        reverse: true
+                    });
+                    $('#transactionForm input[name="date"]').val(response.data.date).trigger('change');
+                    // Wait until the category options are loaded before setting the value
+                    let checkAndSetCategory = function() {
+                        // Check if category option is present yet
+                        if ($('#transactionForm select[name="category_id"] option[value="' + response.data.category_id + '"]').length) {
+                            $('#transactionForm select[name="category_id"]').val(response.data.category_id).trigger('change');
+                        } else {
+                            // If not, try again after a short delay
+                            setTimeout(checkAndSetCategory, 50);
+                        }
+                    };
+                    checkAndSetCategory();                    
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseJSON.message);
+                    toastr.error(xhr.responseJSON.message);
+                }
+            });
+        }
 
         $("#transactionType").on("change", function() {
             let type = $(this).val();
