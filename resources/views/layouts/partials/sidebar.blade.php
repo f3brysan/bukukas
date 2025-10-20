@@ -122,11 +122,11 @@
             <div data-i18n="Profile">Profile</div>
           </a>
         </li>
-        <li class="menu-item">
-          <a href="#" class="menu-link">
-            <div data-i18n="Categories">Categories</div>
-          </a>
-        </li>        
+         <li class="menu-item {{ request()->routeIs('categories.*') ? 'active' : '' }}">
+           <a href="{{ route('categories.index') }}" class="menu-link">
+             <div data-i18n="Categories">Categories</div>
+           </a>
+         </li>
       </ul>
     </li>
 

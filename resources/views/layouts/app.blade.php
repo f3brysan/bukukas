@@ -15,6 +15,7 @@
     <title>@yield('title', 'Dashboard') - {{ config('app.name', 'Bukukas') }}</title>
 
     <meta name="description" content="@yield('description', '')" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('assets') }}/img/favicon/favicon.ico" />
