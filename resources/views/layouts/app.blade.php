@@ -121,6 +121,10 @@
     <!-- Main JS -->
     <script src="{{ asset('assets') }}/js/main.js"></script>
 
+    <!-- Toastr JS -->
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
     @stack('scripts')
   </body>
 </html>
