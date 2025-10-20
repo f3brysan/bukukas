@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Category;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
@@ -13,7 +14,9 @@ class TransactionController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $transactions = Transaction::with('category')->get();
+                $transactions = Transaction::with('category')->where('user_id', auth()->user()->id)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
 
                 return DataTables::of($transactions)
                     ->addIndexColumn()
@@ -47,4 +50,69 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
+    public function storeTransaction(Request $request)
+    {
+        try {
+            $amount = str_replace('.', '', $request->amount);            
+            $transaction = Transaction::create([
+                'category_id' => $request->category_id,
+                'user_id' => auth()->user()->id,
+                'type' => $request->type,
+                'amount' => $amount,
+                'date' => $request->date,
+                'description' => $request->description
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaction stored successfully',
+                'data' => $transaction
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to store transaction',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getMostExpenseCategories()
+    {
+        try {
+            // Get sum of transactions by categories for current user, only for expense type, top 5
+            // Note: Fix the column error by NOT filtering categories table by user_id, 
+            // instead, filter transactions by user_id and type.
+            // Get all categories with 'expense' type
+            $categories = Category::where('type', 'expense')
+                ->with(['transactions' => function ($query) {
+                    $query->where('user_id', auth()->user()->id)
+                        ->where('type', 'expense');
+                }])
+                ->get()
+                ->map(function ($category) {
+                    $sum = $category->transactions->sum('amount');
+                    $category->total_expense = $sum;
+                    return $category;
+                })
+                ->sortByDesc('total_expense')
+                ->take(5)
+                ->values();
+            
+            return [
+                'success' => true,
+                'message' => 'Most expense categories fetched successfully',
+                'categories' => $categories                
+            ];
+        } catch (\Throwable $th) {
+            return [
+                'success' => false,
+                'message' => 'Failed to get most expense categories',
+                'error' => $th->getMessage(),
+                'categories' => []
+            ];
+        }
+    }
 }
+                
