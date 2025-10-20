@@ -9,33 +9,8 @@
     </div>
 
     <div class="row gy-4 mb-4">
-        <!-- Quick Actions -->
-        <div class="col-lg-3">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h4 class="mb-2">Quick Actions</h4>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <a href="javascript:void(0);" onclick="addIncome()" class="btn btn-success">
-                            <i class="mdi mdi-cash-plus me-2"></i>
-                            Add Income
-                        </a>
-                        <a href="javascript:void(0);" onclick="addExpense()" class="btn btn-danger">
-                            <i class="mdi mdi-cash-minus me-2"></i>
-                            Add Expense
-                        </a>
-                        <a href="javascript:void(0);" onclick="viewReports()" class="btn btn-primary">
-                            <i class="mdi mdi-chart-line me-2"></i>
-                            View Reports
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Recent Transactions -->
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <div class="card h-100">
                 <div class="card-header">
                     <div class="d-flex justify-content-between">
@@ -43,6 +18,14 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-lg-12 d-flex justify-content-end">
+                            <a href="javascript:void(0);" onclick="addTransaction()" class="btn btn-outline-primary">
+                                <i class="mdi mdi-cash-plus me-2"></i>
+                                Add Transaction
+                            </a>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-sm table-hover" id="transactionsTable">
                             <thead>
@@ -52,6 +35,7 @@
                                     <th class="text-center">Amount</th>
                                     <th class="text-center">Date</th>
                                     <th class="text-center">Type</th>
+                                    <th class="text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -91,159 +75,83 @@
         <div class="col-lg-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h4 class="mb-2">Category Breakdown</h4>
+                    <h4 class="mb-2">Most Expense Categories</h4>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar me-2">
-                                <div class="avatar-initial bg-label-primary rounded">
-                                    <i class="mdi mdi-food mdi-20px"></i>
+                    @if ($mostExpenseCategories['success'])
+                        @foreach ($mostExpenseCategories['categories'] as $category)
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-2">
+                                        <div class="avatar-initial bg-label-danger rounded">
+                                            <i class="mdi mdi-cash-minus mdi-20px"></i>
+                                        </div>
+                                    </div>
+                                    <span>{{ $category->name }}</span>
                                 </div>
+                                <span class="fw-semibold">Rp. {{ number_format($category->total_expense, 0, ',', '.') }}</span>
                             </div>
-                            <span>Food & Dining</span>
+                        @endforeach
+                    @else
+                        <div class="alert alert-danger">
+                            {{ $mostExpenseCategories['message'] }}
                         </div>
-                        <span class="fw-semibold">$1,250</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar me-2">
-                                <div class="avatar-initial bg-label-warning rounded">
-                                    <i class="mdi mdi-car mdi-20px"></i>
-                                </div>
-                            </div>
-                            <span>Transportation</span>
-                        </div>
-                        <span class="fw-semibold">$800</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar me-2">
-                                <div class="avatar-initial bg-label-info rounded">
-                                    <i class="mdi mdi-home mdi-20px"></i>
-                                </div>
-                            </div>
-                            <span>Housing</span>
-                        </div>
-                        <span class="fw-semibold">$2,100</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar me-2">
-                                <div class="avatar-initial bg-label-success rounded">
-                                    <i class="mdi mdi-school mdi-20px"></i>
-                                </div>
-                            </div>
-                            <span>Education</span>
-                        </div>
-                        <span class="fw-semibold">$450</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar me-2">
-                                <div class="avatar-initial bg-label-danger rounded">
-                                    <i class="mdi mdi-medical-bag mdi-20px"></i>
-                                </div>
-                            </div>
-                            <span>Healthcare</span>
-                        </div>
-                        <span class="fw-semibold">$320</span>
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Income Modal -->
-    <div class="modal fade" id="incomeModal" tabindex="-1" aria-labelledby="incomeModalLabel" aria-hidden="true">
+    <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <form id="incomeForm">
+            <form id="transactionForm">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="incomeModalLabel">Add Income</h5>
+                        <h5 class="modal-title" id="transactionModalLabel">Add Transaction</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <!-- Description -->
                         <div class="mb-3">
-                            <label for="incomeDescription" class="form-label">Description</label>
-                            <input type="text" class="form-control" id="incomeDescription" name="description"
-                                placeholder="Enter income description" required>
-                        </div>
-                        <!-- Category -->
-                        <div class="mb-3">
-                            <label for="incomeCategory" class="form-label">Category</label>
-                            <select id="incomeCategory" name="category_id" class="form-select" required>
-                                <option value="" disabled selected>Select category</option>
-                                @foreach ($categories->where('type', 'income') as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <!-- Amount -->
-                        <div class="mb-3">
-                            <label for="incomeAmount" class="form-label">Amount</label>
-                            <input type="text" class="form-control income-amount" id="incomeAmount" name="amount"
-                                placeholder="Enter amount" required>
-                        </div>
-                        <!-- Date -->
-                        <div class="mb-3">
-                            <label for="incomeDate" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="incomeDate" name="date" value="{{ date('Y-m-d') }}" required>
-                        </div>
-                        <input type="hidden" name="type" value="income">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Income</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+                            <label for="transactionDescription" class="form-label">Description</label>
+                            <small class="text-muted">Enter a description for the transaction</small>
+                            <textarea class="form-control" id="transactionDescription" name="description"
+                                placeholder="Enter transaction description" required></textarea>
 
-    {{-- Add Expense Modal --}}
-    <div class="modal fade" id="expenseModal" tabindex="-1" aria-labelledby="expenseModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <form id="expenseForm">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="expenseModalLabel">Add Expense</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <!-- Description -->
+                        </div>
+                        <!-- Type -->
                         <div class="mb-3">
-                            <label for="expenseDescription" class="form-label">Description</label>
-                            <input type="text" class="form-control" id="expenseDescription" name="description"
-                                placeholder="Enter expense description" required>
+                            <label for="transactionType" class="form-label">Type</label>
+                            <select id="transactionType" name="type" class="form-select" required>
+                                <option value="" disabled selected>Select type</option>
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
                         </div>
                         <!-- Category -->
                         <div class="mb-3">
-                            <label for="expenseCategory" class="form-label">Category</label>
-                            <select id="expenseCategory" name="category_id" class="form-select" required>
+                            <label for="transactionCategory" class="form-label">Category</label>
+                            <select id="transactionCategory" name="category_id" class="form-select" required>
                                 <option value="" disabled selected>Select category</option>
-                                @foreach ($categories->where('type', 'expense') as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                @endforeach
                             </select>
                         </div>
                         <!-- Amount -->
                         <div class="mb-3">
-                            <label for="expenseAmount" class="form-label">Amount</label>
-                            <input type="text" class="form-control expense-amount" id="expenseAmount" name="amount"
-                                placeholder="Enter amount" required>
+                            <label for="transactionAmount" class="form-label">Amount</label>
+                            <input type="text" class="form-control transaction-amount" id="transactionAmount"
+                                name="amount" placeholder="Enter amount" required>
                         </div>
                         <!-- Date -->
                         <div class="mb-3">
-                            <label for="expenseDate" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="expenseDate" name="date" value="{{ date('Y-m-d') }}" required>
+                            <label for="transactionDate" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="transactionDate" name="date"
+                                value="{{ date('Y-m-d') }}" required>
                         </div>
-                        <input type="hidden" name="type" value="expense">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Expense</button>
+                        <button type="submit" class="btn btn-primary">Add Transaction</button>
                     </div>
                 </div>
             </form>
@@ -261,9 +169,10 @@
         let transactionsTable;
         let transactionToDelete = null;
         $(document).ready(function() {
-            $('.income-amount, .expense-amount').mask('000.000.000.000.000', {
+            $('.transaction-amount').mask('000.000.000.000.000', {
                 reverse: true
             });
+
             transactionsTable = $('#transactionsTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -287,11 +196,19 @@
                     },
                     {
                         data: 'date',
-                        name: 'date'
+                        name: 'date',
+                        className: 'text-center'
                     },
                     {
                         data: 'type_badge',
                         name: 'type_badge',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
                         orderable: false,
                         searchable: false,
                         className: 'text-center'
@@ -310,12 +227,62 @@
             });
         });
 
-        function addIncome() {
-            $('#incomeModal').modal('show');
+        function addTransaction() {
+            $('#transactionModal').modal('show');
         }
 
-        function addExpense() {
-            $('#expenseModal').modal('show');
-        }
+        $("#transactionForm").on("submit", function(e) {
+            e.preventDefault();
+            let formData = $(this).serialize();
+            $.ajax({
+                url: "{{ route('transactions.store') }}",
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                beforeSend: function() {
+                    $('#transactionForm button[type="submit"]').prop('disabled', true);
+                },
+                success: function(response) {
+                    console.log(response);
+                    toastr.success(response.message);
+                    $('#transactionModal').modal('hide');
+                    transactionsTable.ajax.reload();
+                    $('#transactionForm button[type="submit"]').prop('disabled', false);
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseJSON.message);
+                    toastr.error(xhr.responseJSON.message);
+                    $('#transactionForm button[type="submit"]').prop('disabled', false);
+                }
+            });
+        });
+
+        $("#transactionType").on("change", function() {
+            let type = $(this).val();
+            $('#transactionCategory').html('<option value="" disabled selected>Loading...</option>');
+            $.ajax({
+                url: "{{ route('categories.get.type', ['type' => ':type']) }}".replace(':type', type),
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    console.log(response);
+                    $('#transactionCategory').html(
+                        '<option value="" disabled selected>Select category</option>');
+                    response.data.forEach(function(category) {
+                        $('#transactionCategory').append('<option value="' + category.id +
+                            '">' + category.name + '</option>');
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseJSON.message);
+                    toastr.error(xhr.responseJSON.message);
+                    $('#transactionCategory').html(
+                        '<option value="" disabled selected>Select category</option>');
+                }
+            });
+        })
     </script>
 @endpush

@@ -17,6 +17,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::resource('categories', CategoryController::class);
+    Route::get('categories/get/{type}', [CategoryController::class, 'getCategoriesByType'])->name('categories.get.type');
 
     Route::get('/transactions/get', [TransactionController::class, 'getTransactions'])->name('transactions.get');
+    Route::post('/transactions/store', [TransactionController::class, 'storeTransaction'])->name('transactions.store');
 });

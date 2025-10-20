@@ -10,6 +10,9 @@ class DashboardController extends Controller
     public function index()
     {
         $categories = Category::all();
-        return view('dashboard.index', compact('categories'));
+        $transactionsController = new TransactionController();
+        $mostExpenseCategories = $transactionsController->getMostExpenseCategories();
+        
+        return view('dashboard.index', compact('categories', 'mostExpenseCategories'));
     }
 }
