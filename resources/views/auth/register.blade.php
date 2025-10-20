@@ -117,7 +117,8 @@
                                     </label>
                                 </div>
                             </div>
-                            <button type="button" id="btnRegister" class="btn btn-primary d-grid w-100">Sign up</button>
+                            <button type="button" id="btnRegister" class="btn btn-primary d-grid w-100">Sign
+                                up</button>
                         </form>
                     </div>
 
@@ -168,29 +169,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
         $(document).ready(function() {
-            console.log('Document ready - form script loaded');
-        });
+            $("#btnRegister").on("click", function(e) {
+                e.preventDefault();
+                let formData = $("#formAuthentication").serialize();
+                console.log(formData);
 
-        $("#btnRegister").on("click", function(e) {
-            e.preventDefault();
-            let formData = $("#formAuthentication").serialize();
-            console.log(formData);
+                $.ajax({
+                    url: "{{ route('register.store') }}",
+                    type: "POST",
+                    data: formData,
+                    dataType: "JSON",
+                    success: function(response) {
+                        toastr.success(response.message);
 
-            $.ajax({
-                url: "{{ route('register.store') }}",
-                type: "POST",
-                data: formData,
-                dataType: "JSON",
-                success: function(response) {
-                    toastr.success(response.message);
-                    
-                    setTimeout(function() {
-                        window.location.href = "{{ route('login') }}";
-                    }, 1000);
-                },
-                error: function(xhr, status, error) {
-                    toastr.error(xhr.responseJSON.message + ' - ' + xhr.responseJSON.error);
-                }
+                        setTimeout(function() {
+                            window.location.href = "{{ route('login') }}";
+                        }, 1000);
+                    },
+                    error: function(xhr, status, error) {
+                        toastr.error(xhr.responseJSON.message + ' - ' + xhr.responseJSON.error);
+                    }
+                });
             });
         });
     </script>
