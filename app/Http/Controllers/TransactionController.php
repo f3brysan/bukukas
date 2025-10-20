@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
@@ -117,6 +118,34 @@ class TransactionController extends Controller
         }
     }
 
+    public function getDailyChart()
+    {
+        try {
+            $chart = Transaction::where('user_id', auth()->user()->id)
+                ->select(
+                    DB::raw('date(date) as date'),
+                    DB::raw('CAST(SUM(amount) AS SIGNED) as total_amount'),
+                    DB::raw('CAST(SUM(CASE WHEN type = "income" THEN amount ELSE 0 END) AS SIGNED) as total_income'),
+                    DB::raw('CAST(SUM(CASE WHEN type = "expense" THEN amount ELSE 0 END) AS SIGNED) as total_expense')
+                )
+                ->groupBy('date')
+                ->get();
+            
+            return [
+                'success' => true,
+                'message' => 'Monthly chart fetched successfully',
+                'chart' => $chart
+            ];
+        } catch (\Throwable $th) {
+            return [
+                'success' => false,
+                'message' => 'Failed to get monthly chart',
+                'error' => $th->getMessage(),
+                'chart' => []
+            ];
+        }
+    }
+
     public function editTransaction($id)
     {
         try {
@@ -152,7 +181,7 @@ class TransactionController extends Controller
                 'success' => true,
                 'message' => 'Transaction deleted successfully'
             ], 200);
-            
+
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
