@@ -175,4 +175,21 @@ class CategoryController extends Controller
             ], 500);
         }
     }
+
+    public function getCategoriesByType($type)
+    {
+        try {
+            $categories = Category::where('type', $type)->get();
+            return response()->json([
+                'success' => true,
+                'data' => $categories
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get categories',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
 }
