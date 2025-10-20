@@ -105,7 +105,7 @@
                         </div>
                         <div class="mb-3 d-flex justify-content-between">
                         </div>
-                        <button type="button" id="btnLogin" class="btn btn-primary d-grid w-100">Sign in</button>
+                        <button type="submit" id="btnLogin" class="btn btn-primary d-grid w-100">Sign in</button>
                     </form>
 
                     <p class="text-center mt-2">
@@ -146,15 +146,14 @@
     <script src="{{ asset('assets') }}/js/main.js"></script>
 
     <!-- Page JS -->
-    <script src="{{ asset('assets') }}/js/pages-auth.js"></script>
+    {{-- <script src="{{ asset('assets') }}/js/pages-auth.js"></script> --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
         $(document).ready(function() {
-            $("#btnLogin").on("click", function(e) {
+            $("#formAuthentication").on("submit", function(e) {
                 e.preventDefault();
-                let formData = $("#formAuthentication").serialize();
-                console.log(formData);
+                let formData = $("#formAuthentication").serialize();                
 
                 $("#btnLogin").prop("disabled", true);
                 $("#btnLogin").html("Signing in...");
