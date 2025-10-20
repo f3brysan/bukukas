@@ -117,7 +117,7 @@ class TransactionController extends Controller
         }
     }
 
-    public function editTransaction(Request $request, $id)
+    public function editTransaction($id)
     {
         try {
             $transaction = Transaction::find($id);
@@ -131,6 +131,32 @@ class TransactionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to edit transaction',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteTransaction(Request $request)
+    {
+        try {
+            $transaction = Transaction::find($request->id);
+            if (!$transaction) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaction not found'
+                ], 404);
+            }
+
+            $transaction->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaction deleted successfully'
+            ], 200);
+            
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete transaction',
                 'error' => $th->getMessage()
             ], 500);
         }

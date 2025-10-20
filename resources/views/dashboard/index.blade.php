@@ -159,6 +159,27 @@
             </form>
         </div>
     </div>
+
+    <!-- Delete Transaction Modal -->
+    <div class="modal fade" id="deleteTransactionModal" tabindex="-1" aria-labelledby="deleteTransactionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteTransactionModalLabel">Delete Transaction</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this transaction?</p>
+                </div>
+                <form id="deleteTransactionForm">
+                    <input type="hidden" name="id" id="deleteTransactionId">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -300,6 +321,42 @@
                 }
             });
         }
+
+        function deleteTransaction(id) {
+            $('#deleteTransactionModal').modal('show');
+            $('#deleteTransactionModalLabel').text('Delete Transaction');   
+            $('#deleteTransactionId').val(id);
+        }
+
+        $("#deleteTransactionForm").on("submit", function(e) {
+            e.preventDefault();
+            let formData = $(this).serialize();
+            $.ajax({
+                url: "{{ route('transactions.delete') }}",
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                beforeSend: function() {
+                    $('#deleteTransactionForm button[type="submit"]').prop('disabled', true);
+                },
+                success: function(response) {
+                    console.log(response);
+                    toastr.success(response.message);
+                    $('#deleteTransactionModal').modal('hide');
+                    transactionsTable.ajax.reload();
+                    $('#deleteTransactionForm button[type="submit"]').prop('disabled', false);
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseJSON.message);
+                    toastr.error(xhr.responseJSON.message);
+                    $('#deleteTransactionForm button[type="submit"]').prop('disabled', false);
+                }
+            });
+        });
+
 
         $("#transactionType").on("change", function() {
             let type = $(this).val();

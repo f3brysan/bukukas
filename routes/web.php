@@ -22,4 +22,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions/get', [TransactionController::class, 'getTransactions'])->name('transactions.get');
     Route::get('/transactions/edit/{id}', [TransactionController::class, 'editTransaction'])->name('transactions.edit');
     Route::post('/transactions/store', [TransactionController::class, 'storeTransaction'])->name('transactions.store');
+    Route::post('/transactions/delete', [TransactionController::class, 'deleteTransaction'])->name('transactions.delete');
 });
