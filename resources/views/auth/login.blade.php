@@ -83,7 +83,7 @@
                     <h4 class="mb-2 fw-semibold">Welcome to Buku Kas! 👋</h4>
                     <p class="mb-4">Please sign-in to your account and start the Buku Kas</p>
 
-                    <form id="formAuthentication" class="mb-3">
+                    <form id="formAuthentication" class="mb-3" method="POST">
                         @csrf
                         <div class="form-floating form-floating-outline mb-3">
                             <input type="text" class="form-control" id="email" name="email"
@@ -147,7 +147,7 @@
     <script src="{{ asset('assets') }}/js/main.js"></script>
 
     <!-- Page JS -->
-    <script src="{{ asset('assets') }}/js/pages-auth.js"></script>
+    {{-- <script src="{{ asset('assets') }}/js/pages-auth.js"></script> --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
@@ -155,7 +155,7 @@
             console.log("Login script loaded");
             
             // Disable FormValidation default submit behavior
-            if (typeof FormValidation !== 'undefined') {
+            if (typeof FormValidation !== 'undefined' && FormValidation.utils && typeof FormValidation.utils.destroy === 'function') {
                 const formElement = document.querySelector('#formAuthentication');
                 if (formElement) {
                     // Remove any existing FormValidation instance
