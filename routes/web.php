@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
@@ -23,4 +24,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions/edit/{id}', [TransactionController::class, 'editTransaction'])->name('transactions.edit');
     Route::post('/transactions/store', [TransactionController::class, 'storeTransaction'])->name('transactions.store');
     Route::post('/transactions/delete', [TransactionController::class, 'deleteTransaction'])->name('transactions.delete');
+    Route::get('/export', [ExportController::class, 'index'])->name('export.index');
+    Route::get('/export/pdf', [ExportController::class, 'exportPdf'])->name('export.pdf');
 });

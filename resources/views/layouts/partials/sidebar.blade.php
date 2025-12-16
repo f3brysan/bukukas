@@ -40,21 +40,11 @@
         <div data-i18n="Reports">Reports</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item">
-          <a href="#" class="menu-link">
-            <div data-i18n="Financial Summary">Financial Summary</div>
+        <li class="menu-item {{ request()->routeIs('export.*') ? 'active' : '' }}">
+          <a href="{{ route('export.index') }}" class="menu-link">
+            <div data-i18n="Export Report">Export Report</div>
           </a>
-        </li>
-        <li class="menu-item">
-          <a href="#" class="menu-link">
-            <div data-i18n="Monthly Report">Monthly Report</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="#" class="menu-link">
-            <div data-i18n="Category Analysis">Category Analysis</div>
-          </a>
-        </li>
+        </li>        
       </ul>
     </li>
 
